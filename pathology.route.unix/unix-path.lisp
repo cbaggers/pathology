@@ -1,4 +1,4 @@
-(in-package #:trail.unix)
+(in-package #:pathology.route.unix)
 
 (def-route-flavor unix-path)
 

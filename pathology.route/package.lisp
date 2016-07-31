@@ -1,6 +1,6 @@
 ;;;; package.lisp
 
-(defpackage #:trail
+(defpackage #:pathology.route
   (:use #:cl)
   (:export :route
 	   :tokens

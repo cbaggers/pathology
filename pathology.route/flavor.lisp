@@ -1,4 +1,4 @@
-(in-package :trail)
+(in-package :pathology.route)
 
 (defclass route-flavor ()
   ((route :initarg :route)
