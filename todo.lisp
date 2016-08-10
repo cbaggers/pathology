@@ -1,3 +1,15 @@
+;; Note on deserializer
+;; - deserialize takes a whole string and returns tokens
+;; - deserialize should remove escaping
+;; - deserialize returns the following values:
+;;   - a list of tokens
+;;   - relative flag
+;;   - terminated flag
+;;   - key pair args for the special fields
+;; - The results of deserialize are this way so that higher level functions
+;;   can be in change of some universal logic (like how relative paths can't
+;;   have special fields
+
 
 ;; Note on validator
 ;;
@@ -8,20 +20,22 @@
 ;; - validator should NOT escape chars, that is the job of the serializer
 ;;   It must return t if the token CAN be serialized into a valid path component
 ;; - serializer takes a single token
-;; - deserialize takes a whole string and returns tokens
-;; - deserialize should remove escaping
 ;; - by having serialize work on a single token, we can cache it in a smarter
 ;;   way. The user also doesnt have to worry about escaping in their tokens.
 ;;   They can use spaces, odd chars, whatever, if it passes the validator it's
 ;;   kosher
 
+
 ;; Shit to do
-;; - Add #'route* which lets you specify terminates by value
 ;; - Add support for the :up token
-;; - only allow flavor special fields on the absolute paths
+;; - Add validate-path-init to check the results of deserialize for universal
+;;   rules.
+;; - Add first validate-path-init rule 'no special fields on the relative paths'
+;; - modify constructor to pass results of deserialize to validate-path-init
+;;
 ;; - Add incomplete-token class
-;; - Fix valid token checks to allow incomplete-token
 ;; - Add function to make incomplete-tokens
+;; - Fix valid token checks to allow incomplete-token
 
 ;; - rename the platform specific routes to paths? (work out and do it)
 ;; - call the validator in the correct funcs (do this in route?)
