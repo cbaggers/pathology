@@ -4,7 +4,7 @@
   (:use #:cl #:pathology.route #:pathology.route.unix)
   (:export :serialize-route
 	   :deserialize-route
-	   :is-relative
+	   :relative-p
 	   :incomplete-p
 	   :push-token
 	   :pop-token

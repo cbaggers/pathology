@@ -10,16 +10,16 @@
     (when route
       (terminates route))))
 
-(defmethod is-relative ((route route-flavor))
+(defmethod relative-p ((route route-flavor))
   (with-slots (route) route
     (if route
-        (is-relative route)
+        (relative-p route)
         t)))
 
 (defmethod incomplete-p ((route route-flavor))
   (with-slots (route) route
     (when route
-      (is-relative route))))
+      (relative-p route))))
 
 (defmethod tokens ((route route-flavor))
   (with-slots (route) route

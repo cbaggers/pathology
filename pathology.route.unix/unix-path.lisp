@@ -4,7 +4,7 @@
 
 (defmethod serialize-route ((route unix-path) &optional stream)
   (format stream "~a~{~a~^/~}"
-	  (if (is-relative route) "" "/")
+	  (if (relative-p route) "" "/")
 	  (reverse (tokens route))))
 
 (defmethod deserialize-route (kind string (as (eql 'unix-path)))

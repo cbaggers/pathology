@@ -29,8 +29,6 @@
 
 
 ;; Shit to do
-;; - Add support for the :up token
-;; - rename #'is-relative to #'relative-p
 ;; - Add validate-path-init to check the results of deserialize for
 ;;   universal rules.
 ;; - Add first validate-path-init rule 'no special fields on the relative

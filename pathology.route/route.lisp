@@ -4,7 +4,7 @@
 
 (defclass route ()
   ((tokens :initform nil :initarg :tokens :reader tokens)
-   (is-relative :initform nil :initarg :is-relative :reader is-relative)
+   (relative-p :initform nil :initarg :relative-p :reader relative-p)
    (terminates :initform nil :initarg :terminates :reader terminates)
    (incomplete-token-count :initform nil :initarg :incomplete-token-count
                            :reader incomplete-token-count)))
@@ -91,7 +91,7 @@
       (make-instance
        'route
        :tokens tokens
-       :is-relative (not (null relative?))
+       :relative-p (not (null relative?))
        :terminates (not (null terminated?))
        :incomplete-token-count tc))))
 
@@ -100,9 +100,9 @@
   (assert (not (terminates route)))
   (make-instance
    'route
-   :tokens (resolve-up-tokens (is-relative route) (cons token (tokens route)))
+   :tokens (resolve-up-tokens (relative-p route) (cons token (tokens route)))
    :terminates terminates?
-   :is-relative (is-relative route)
+   :relative-p (relative-p route)
    :incomplete-token-count (if (typep token 'incomplete-token)
                                (1+ (incomplete-token-count route))
                                (incomplete-token-count route))))
@@ -118,7 +118,7 @@
         'route
         :tokens tokens
         :terminates nil
-        :is-relative (is-relative route)
+        :relative-p (relative-p route)
         :incomplete-token-count (if (typep focus 'incomplete-token)
                                     (1- tc)
                                     tc))
@@ -150,12 +150,12 @@
 
 (defmethod %join-routes ((first route) (second route))
   (assert (not (terminates first)))
-  (assert (is-relative second))
+  (assert (relative-p second))
   (make-instance
    'route
    :tokens (append (tokens second) (tokens first))
    :terminates (terminates second)
-   :is-relative (is-relative first)
+   :relative-p (relative-p first)
    :incomplete-token-count (+ (incomplete-token-count first)
                               (incomplete-token-count second))))
 
@@ -173,14 +173,14 @@
         'route
         :tokens left-tokens
         :terminates nil
-        :is-relative (is-relative route)
+        :relative-p (relative-p route)
         :incomplete-token-count (count-if #'incomplete-token-p left-tokens)))
      (when right-tokens
        (make-instance
         'route
         :tokens right-tokens
         :terminates (terminates route)
-        :is-relative t
+        :relative-p t
         :incomplete-token-count (count-if #'incomplete-token-p right-tokens))))))
 
 ;;----------------------------------------------------------------------
