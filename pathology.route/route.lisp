@@ -48,7 +48,26 @@
 
 (deftype token ()
   `(or incomplete-token
+       (satisfies up-token-p)
        (and string (satisfies can-be-encoded-by-utf8))))
+
+;;----------------------------------------------------------------------
+
+(defun up-token-p (token)
+  (eq token :up))
+
+(defun resolve-up-tokens (relative reverse-token-list)
+  (let* (up
+	 (new (loop :for token :in reverse-token-list
+		 :for up? := (up-token-p token)
+		 :if (or up up?)
+		 :do (if up? (push token up) (pop up))
+		 :else
+		 :collect token)))
+    (unless relative
+      (when up
+	(error ":up token found at start of absolute path")))
+    (append new up)))
 
 ;;----------------------------------------------------------------------
 
@@ -57,25 +76,15 @@
   (assert (every (lambda (x) (or (typep x 'token)
                                  (terminate-markerp x)))
                  tokens))
-  (let* ((tc (count-if (lambda (x) (typep x 'incomplete-token))
-                       tokens))
-         (terminate (member-if #'terminate-markerp tokens))
-         (tokens (remove-if #'terminate-markerp (reverse tokens))))
-    (unless (or (null terminate) (= (length terminate) 2))
-      (error "invalid termination"))
-    (when tokens
-      (make-instance
-       'route
-       :tokens tokens
-       :is-relative (not (null relative?))
-       :terminates (not (null terminate))
-       :incomplete-token-count tc))))
+  (let* ((terminates? (member-if #'terminate-markerp tokens))
+         (tokens (remove-if #'terminate-markerp tokens)))
+    (route* relative? terminates? tokens)))
 
-(defmethod route* (relative? terminated? &rest tokens)
+(defmethod route* (relative? terminated? tokens)
   (assert (every (lambda (x) (typep x 'token))
                  tokens))
   (let* ((tc (count-if (lambda (x) (typep x 'incomplete-token)) tokens))
-         (tokens (reverse tokens)))
+         (tokens (resolve-up-tokens relative? (reverse tokens))))
     (when (and terminated? (= (length tokens) 0))
       (error "invalid termination"))
     (when tokens
@@ -91,7 +100,7 @@
   (assert (not (terminates route)))
   (make-instance
    'route
-   :tokens (cons token (tokens route))
+   :tokens (resolve-up-tokens (is-relative route) (cons token (tokens route)))
    :terminates terminates?
    :is-relative (is-relative route)
    :incomplete-token-count (if (typep token 'incomplete-token)
@@ -180,7 +189,7 @@
   (declare (ignore stream))
   (error "Basic route types have no serializable form"))
 
-(defmethod deserialize-route (string (as (eql 'route)))
+(defmethod deserialize-route (kind string (as (eql 'route)))
   (error "Basic route types have no serializable form and as such you cannot
 deserialize this string to one.
 :string ~s

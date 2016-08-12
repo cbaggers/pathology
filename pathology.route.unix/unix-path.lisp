@@ -7,11 +7,16 @@
 	  (if (is-relative route) "" "/")
 	  (reverse (tokens route))))
 
-(defmethod deserialize-route (string (as (eql 'unix-path)))
-  (error "Pathology: Can only deserialize strings to unix-paths~%Received:~a"
+(defmethod deserialize-route (kind string (as (eql 'unix-path)))
+  (error "Pathology: Can only deserialize strings to unix-paths~%Received:~s"
 	 string))
 
-;; (defmethod deserialize-route ((string string) (as (eql 'unix-path)))
-;;   (loop :for c :across string :do
-;;      ())
-;;   )
+(defmethod deserialize-route (kind (string string) (as (eql 'unix-path)))
+  (let* ((split (uiop:split-string string :separator '(#\/)))
+	 (first-raw (first split))
+	 (absolute (and (stringp first-raw) (uiop:emptyp first-raw)))
+	 (tokens (remove-if #'uiop:emptyp split)))
+    (values tokens (not absolute) (eq kind :file))))
+
+(defmethod validate-token (token (flavor (eql 'unix-path)))
+  (null (find #\/ token)))

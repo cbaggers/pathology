@@ -3,8 +3,7 @@
 ;;----------------------------------------------------------------------
 
 (defclass route-flavor ()
-  ((route :initarg :route)
-   (token-validator :initform #'identity :initarg :token-validator)))
+  ((route :initarg :route)))
 
 (defmethod terminates ((route route-flavor))
   (with-slots (route) route
@@ -31,6 +30,8 @@
   (format stream "#>~a>~s"
           (string-downcase (type-of obj))
           (serialize-route obj)))
+
+(defgeneric validate-token (token flavor))
 
 ;;----------------------------------------------------------------------
 
@@ -66,17 +67,30 @@
                          :initarg ,(intern (symbol-name name) :keyword)
                          :reader ,name)))
 
-           (defmethod ,constructor (&optional (path-string ,default-path))
-             (deserialize-route path-string ',name))
+           (defmethod ,constructor (kind &optional (path-string ,default-path))
+	     (assert (find kind '(:file :dir)))
+	     (multiple-value-bind (tokens relative terminated key-vals)
+		 (deserialize-route kind path-string ',name)
+	       (declare (ignorable key-vals))
+	       (,@(if fields
+		      `(destructuring-bind ,(mapcar (lambda (x) (subseq x 0 2))
+						    fields)
+			   key-vals)
+		      `(progn))
+		 (let ((route (route* relative terminated tokens)))
+		   (make-instance ',name :route route)))))
+
+	   (defmethod initialize-instance ((path ,name) &allow-other-keys)
+	     )
 
            (defmethod push-token ((route ,name) token &optional terminates)
-             (with-slots ((inner route) token-validator) route
-               (let* ((token (funcall token-validator token))
+             (with-slots ((inner route)) route
+               (let* ((token (validate-token token ',name))
                       (new-route (push-token inner token terminates)))
                  ,(emit-new 'new-route 'route))))
 
            (defmethod pop-token ((route ,name))
-             (with-slots ((inner route) token-validator) route
+             (with-slots ((inner route)) route
                (when inner
                  (multiple-value-bind (new-route token) (pop-token inner)
                    (values

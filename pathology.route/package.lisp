@@ -14,4 +14,5 @@
            :incomplete-token
            :def-route-flavor
            :serialize-route
-           :deserialize-route))
+           :deserialize-route
+	   :validate-token))
