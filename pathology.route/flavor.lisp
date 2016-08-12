@@ -45,12 +45,13 @@
     (assert (every #'symbolp additional-fields))
     (assert (stringp default-path))
     (let ((constructor (or constructor name))
-          (fields (mapcar (lambda (f)
-                            (destructuring-bind (name initform)
-                                (if (listp f) f (list f))
-                              (list name initform
-                                    (intern (symbol-name name) :keyword))))
-                          additional-fields)))
+	  (name-kwd (intern (symbol-name name) :keyword))
+	  (fields (mapcar (lambda (f)
+			    (destructuring-bind (name initform)
+				(if (listp f) f (list f))
+			      (list name initform
+				    (intern (symbol-name name) :keyword))))
+			  additional-fields)))
       (labels ((emit-new (new-route-val old-data-val)
                  (assert (and (symbolp new-route-val)
                               (symbolp old-data-val)))
@@ -80,8 +81,18 @@
 						    fields)
 			   key-vals)
 		      `(progn))
+		  (loop :for token :in tokens :do (validate-token token ',name))
 		 (let ((route (route* relative terminated tokens)))
 		   (make-instance ',name :route route)))))
+
+	   (defmethod pathology.route::%make-path
+	       (path-form (path-kind-name (eql ,name-kwd)))
+	     (apply #',constructor path-form ))
+
+	   (defmethod make-load-form ((path ,name) &optional environment)
+	     (declare (ignore environment))
+	     (list ',constructor (if (terminates path) :file :dir)
+		   (serialize-route path)))
 
 	   (defmethod initialize-instance :after
 	     ((path ,name) &key ,@(mapcar #'first fields))

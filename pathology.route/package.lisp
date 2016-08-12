@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:pathology.route
-  (:use #:cl)
+  (:use #:cl #:named-readtables)
   (:export :route
            :route*
            :tokens

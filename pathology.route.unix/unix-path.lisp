@@ -1,12 +1,17 @@
 (in-package #:pathology.route.unix)
+(named-readtables:in-readtable pathology.route::path-syntax)
 
 (def-route-flavor unix-path "/")
 
 (defmethod serialize-route ((route unix-path) &optional stream)
   (format stream "~a~{~a~^/~}~@[/~]"
 	  (if (relative-p route) "" "/")
-	  (reverse (tokens route))
+	  (mapcar #'unix-escape (reverse (tokens route)))
 	  (not (terminates route))))
+
+;; (defun generic-unix-escape (token)
+;;   (let ((safe "a-zA-Z0-9,._+:@%/-"))
+;;     ()))
 
 (defmethod deserialize-route (kind string (as (eql 'unix-path)))
   (error "Pathology: Can only deserialize strings to unix-paths~%Received:~s"
@@ -21,3 +26,6 @@
 
 (defmethod validate-token ((token string) (flavor (eql 'unix-path)))
   (null (find #\/ token)))
+
+(defun meh ()
+  (print #>unix-path>(:file "/hi/there")))
