@@ -27,8 +27,9 @@
       (tokens route))))
 
 (defmethod print-object ((obj route-flavor) stream)
-  (format stream "#>~a>~s"
+  (format stream "#>~a>(~a ~s)"
           (string-downcase (type-of obj))
+	  (if (terminates obj) ":file" ":dir")
           (serialize-route obj)))
 
 (defgeneric validate-token (token flavor))
