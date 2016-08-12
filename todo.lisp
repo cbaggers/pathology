@@ -29,13 +29,6 @@
 
 
 ;; Shit to do
-;; - Add validate-path-init to check the results of deserialize for
-;;   universal rules.
-;; - Add first validate-path-init rule 'no special fields on the relative
-;;   paths'
-;; - modify constructor to pass results of deserialize to
-;;   #'validate-path-init
-;;
 ;; - Add incomplete-token class
 ;; - Add function to make incomplete-tokens
 ;; - Fix valid token checks to allow incomplete-token

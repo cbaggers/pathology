@@ -96,9 +96,10 @@
              (with-slots ((inner route)) route
                (when inner
                  (multiple-value-bind (new-route token) (pop-token inner)
-                   (values
-                    ,(emit-new 'new-route 'route)
-                    token)))))
+		   (unless (and (null new-route) (relative-p route))
+		     (values
+		      ,(emit-new 'new-route 'route)
+		      token))))))
 
            (defmethod join-routes ((first ,name) (second ,name) &rest rest)
              (let ((new-route (apply #'join-routes
