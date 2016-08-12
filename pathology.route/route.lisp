@@ -30,6 +30,9 @@
 (defclass incomplete-token ()
   ((token :initform nil :initarg :token :reader token)))
 
+(defun incomplete (token)
+  (make-instance 'incomplete-token :token token))
+
 (defmethod incomplete-token-p ((token incomplete-token))
   t)
 

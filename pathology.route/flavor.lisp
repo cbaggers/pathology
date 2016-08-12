@@ -19,7 +19,7 @@
 (defmethod incomplete-p ((route route-flavor))
   (with-slots (route) route
     (when route
-      (relative-p route))))
+      (incomplete-p route))))
 
 (defmethod tokens ((route route-flavor))
   (with-slots (route) route
@@ -32,6 +32,9 @@
           (serialize-route obj)))
 
 (defgeneric validate-token (token flavor))
+
+(defmethod validate-token :around ((token string) flavor)
+  (call-next-method (copy-seq thing) flavor))
 
 ;;----------------------------------------------------------------------
 

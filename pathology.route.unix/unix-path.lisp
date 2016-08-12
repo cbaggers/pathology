@@ -19,5 +19,5 @@
 	 (tokens (remove-if #'uiop:emptyp split)))
     (values tokens (not absolute) (eq kind :file))))
 
-(defmethod validate-token (token (flavor (eql 'unix-path)))
+(defmethod validate-token ((token string) (flavor (eql 'unix-path)))
   (null (find #\/ token)))

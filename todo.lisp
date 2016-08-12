@@ -29,16 +29,8 @@
 
 
 ;; Shit to do
-;; - Add incomplete-token class
-;; - Add function to make incomplete-tokens
-;; - Fix valid token checks to allow incomplete-token
-
 ;; - rename the platform specific routes to paths? (work out and do it)
 ;; - call the validator in the correct funcs (do this in route?)
-;; - Use validator :before to only pass copy of token to method so can't
-;;   do anything but validate
-;; - Modify path constructors to use (:file "") and (:dir "") syntax for
-;;   defining whether they terminate or not
 
 ;; - add unix token validator (escape chars etc etc)
 
