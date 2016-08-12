@@ -80,8 +80,11 @@
 		 (let ((route (route* relative terminated tokens)))
 		   (make-instance ',name :route route)))))
 
-	   (defmethod initialize-instance ((path ,name) &allow-other-keys)
-	     )
+	   (defmethod initialize-instance :after
+	     ((path ,name) &key ,@(mapcar #'first fields))
+	     (when (relative-p path)
+	       (when (or ,@(mapcar #'first fields))
+		 (error "No special fields allowed in relative paths"))))
 
            (defmethod push-token ((route ,name) token &optional terminates)
              (with-slots ((inner route)) route

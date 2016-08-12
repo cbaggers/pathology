@@ -3,9 +3,10 @@
 (def-route-flavor unix-path "/")
 
 (defmethod serialize-route ((route unix-path) &optional stream)
-  (format stream "~a~{~a~^/~}"
+  (format stream "~a~{~a~^/~}~@[/~]"
 	  (if (relative-p route) "" "/")
-	  (reverse (tokens route))))
+	  (reverse (tokens route))
+	  (not (terminates route))))
 
 (defmethod deserialize-route (kind string (as (eql 'unix-path)))
   (error "Pathology: Can only deserialize strings to unix-paths~%Received:~s"
