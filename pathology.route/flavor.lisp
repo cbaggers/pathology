@@ -91,8 +91,9 @@
 
            (defmethod push-token ((route ,name) token &optional terminates)
              (with-slots ((inner route)) route
-               (let* ((token (validate-token token ',name))
-                      (new-route (push-token inner token terminates)))
+	       (unless (validate-token token ',name)
+		 (error "Invalid token ~s pushed" token))
+               (let* ((new-route (push-token inner token terminates)))
                  ,(emit-new 'new-route 'route))))
 
            (defmethod pop-token ((route ,name))

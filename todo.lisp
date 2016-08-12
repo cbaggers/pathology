@@ -32,9 +32,8 @@
 ;; - rename the platform specific routes to paths? (work out and do it)
 ;; - call the validator in the correct funcs (do this in route?)
 
-;; - add unix token validator (escape chars etc etc)
-
 ;; - add escaping to the unix serialize
+;;   This one is a problem as escaping is specific to the shell
 
 ;; - make the reader macro (uses >this> to dispatch to deserializer)
 
