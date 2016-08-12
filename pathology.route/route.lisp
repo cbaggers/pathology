@@ -108,7 +108,6 @@
                                (incomplete-token-count route))))
 
 (defmethod pop-token ((route route))
-  (assert (not (terminates route)))
   (let ((focus (first (tokens route)))
         (tc (incomplete-token-count route))
         (tokens (cdr (tokens route))))
