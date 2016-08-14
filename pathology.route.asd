@@ -6,7 +6,7 @@
   :license "BSD 2 Clause"
   :serial t
   :depends-on (#:named-readtables)
-  :components ((:file "pathology.route/package")
-               (:file "pathology.route/route")
-	       (:file "pathology.route/reader")
-	       (:file "pathology.route/flavor")))
+  :components ((:file "route/package")
+               (:file "route/route")
+	       (:file "route/reader")
+	       (:file "route/flavor")))

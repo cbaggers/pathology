@@ -28,16 +28,42 @@
 ;; naturally, can only happen on the relevant system
 
 (defclass incomplete-token ()
-  ((token :initform nil :initarg :token :reader token)))
+  ((parts :initform nil :initarg :parts :reader parts)))
 
-(defun incomplete (token)
-  (make-instance 'incomplete-token :token token))
+(defun valid-wild-pair (wild-pair)
+  (and (= (length wild-pair) 2)
+       (characterp (first wild-pair))
+       (keywordp (second wild-pair))))
+
+(defmethod incomplete ((token string) (wild-pairs list))
+  (assert (every #'valid-wild-pair wild-pairs))
+  (let ((tokens (list token)))
+    (loop :for (char sym) :in wild-pairs :do
+       (setf tokens (loop :for token :in tokens :append
+		       (if (stringp token)
+			   (intersperse
+			    (uiop:split-string token :separator (list char))
+			    sym)
+			   (list token)))))
+    (make-instance 'incomplete-token :parts tokens)))
 
 (defmethod incomplete-token-p ((token incomplete-token))
   t)
 
 (defmethod incomplete-token-p (token)
   nil)
+
+(defmethod make-instance :after ((i-tok incomplete-token) &key)
+  (assert (every (lambda (x) (or (stringp x) (keywordp x)))
+		 (parts i-tok))))
+
+(defun intersperse (list with)
+  (let ((list list))
+    (loop :for (elem . rest) := list
+       :collect elem
+       :when rest :collect with
+       :while rest
+       :do (setf list (cdr list)))))
 
 ;;----------------------------------------------------------------------
 

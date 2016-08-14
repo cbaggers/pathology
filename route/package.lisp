@@ -12,7 +12,9 @@
            :join-routes
            :split-route
            :incomplete-p
+	   :incomplete
            :incomplete-token
+	   :parts
            :def-route-flavor
            :serialize-route
            :deserialize-route
