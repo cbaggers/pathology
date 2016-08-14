@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:pathology
-  (:use #:cl #:pathology.route #:pathology.route.unix)
+  (:use #:cl #:pathology.route #:pathology.route.posix)
   (:export :serialize-route
 	   :deserialize-route
 	   :relative-p

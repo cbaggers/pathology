@@ -5,6 +5,6 @@
   :author "Chris Bagley <techsnuffle@gmail.com>"
   :license "BSD 2 Clause"
   :serial t
-  :depends-on (#:pathology.route #:pathology.route.unix)
+  :depends-on (#:pathology.route #:pathology.route.posix)
   :components ((:file "pathology/package")
                (:file "pathology/base")))

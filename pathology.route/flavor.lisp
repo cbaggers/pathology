@@ -35,7 +35,7 @@
 (defgeneric validate-token (token flavor))
 
 (defmethod validate-token :around ((token string) flavor)
-  (call-next-method (copy-seq thing) flavor))
+  (call-next-method (copy-seq token) flavor))
 
 ;;----------------------------------------------------------------------
 
