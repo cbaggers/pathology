@@ -5,13 +5,13 @@
 (defclass route ()
   ((tokens :initform nil :initarg :tokens :reader tokens)
    (relative-p :initform nil :initarg :relative-p :reader relative-p)
-   (terminates :initform nil :initarg :terminates :reader terminates)
+   (terminates-p :initform nil :initarg :terminates-p :reader terminates-p)
    (incomplete-token-count :initform nil :initarg :incomplete-token-count
                            :reader incomplete-token-count)))
 
 (defmethod print-object ((route route) stream)
   (let* ((tokens (reverse (tokens route)))
-         (tokens (if (terminates route)
+         (tokens (if (terminates-p route)
                      (append (butlast tokens)
                              (cons :> (last tokens)))
                      tokens)))
@@ -79,9 +79,9 @@
   (assert (every (lambda (x) (or (typep x 'token)
                                  (terminate-markerp x)))
                  tokens))
-  (let* ((terminates? (member-if #'terminate-markerp tokens))
+  (let* ((terminates-p? (member-if #'terminate-markerp tokens))
          (tokens (remove-if #'terminate-markerp tokens)))
-    (route* relative? terminates? tokens)))
+    (route* relative? terminates-p? tokens)))
 
 (defmethod route* (relative? terminated? tokens)
   (assert (every (lambda (x) (typep x 'token))
@@ -95,16 +95,16 @@
        'route
        :tokens tokens
        :relative-p (not (null relative?))
-       :terminates (not (null terminated?))
+       :terminates-p (not (null terminated?))
        :incomplete-token-count tc))))
 
-(defmethod push-token ((route route) token &optional terminates?)
+(defmethod push-token ((route route) token &optional terminates-p?)
   (assert (typep token 'token))
-  (assert (not (terminates route)))
+  (assert (not (terminates-p route)))
   (make-instance
    'route
    :tokens (resolve-up-tokens (relative-p route) (cons token (tokens route)))
-   :terminates terminates?
+   :terminates-p terminates-p?
    :relative-p (relative-p route)
    :incomplete-token-count (if (typep token 'incomplete-token)
                                (1+ (incomplete-token-count route))
@@ -119,7 +119,7 @@
        (make-instance
         'route
         :tokens tokens
-        :terminates nil
+        :terminates-p nil
         :relative-p (relative-p route)
         :incomplete-token-count (if (typep focus 'incomplete-token)
                                     (1- tc)
@@ -151,12 +151,12 @@
     (apply #'join-routes (first rest) (second rest) (cddr rest))))
 
 (defmethod %join-routes ((first route) (second route))
-  (assert (not (terminates first)))
+  (assert (not (terminates-p first)))
   (assert (relative-p second))
   (make-instance
    'route
    :tokens (append (tokens second) (tokens first))
-   :terminates (terminates second)
+   :terminates-p (terminates-p second)
    :relative-p (relative-p first)
    :incomplete-token-count (+ (incomplete-token-count first)
                               (incomplete-token-count second))))
@@ -174,14 +174,14 @@
        (make-instance
         'route
         :tokens left-tokens
-        :terminates nil
+        :terminates-p nil
         :relative-p (relative-p route)
         :incomplete-token-count (count-if #'incomplete-token-p left-tokens)))
      (when right-tokens
        (make-instance
         'route
         :tokens right-tokens
-        :terminates (terminates route)
+        :terminates-p (terminates-p route)
         :relative-p t
         :incomplete-token-count (count-if #'incomplete-token-p right-tokens))))))
 

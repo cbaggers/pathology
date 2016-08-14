@@ -5,7 +5,7 @@
   (:export :route
            :route*
            :tokens
-	   :terminates
+	   :terminates-p
            :relative-p
            :push-token
            :pop-token

@@ -7,7 +7,7 @@
   (format stream "~a~{~a~^/~}~@[/~]"
 	  (if (relative-p route) "" "/")
 	  (mapcar #'posix-escape (reverse (tokens route)))
-	  (not (terminates route))))
+	  (not (terminates-p route))))
 
 (defun posix-escape (token)
   token)

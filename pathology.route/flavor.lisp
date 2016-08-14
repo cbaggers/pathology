@@ -5,10 +5,10 @@
 (defclass route-flavor ()
   ((route :initarg :route)))
 
-(defmethod terminates ((route route-flavor))
+(defmethod terminates-p ((route route-flavor))
   (with-slots (route) route
     (when route
-      (terminates route))))
+      (terminates-p route))))
 
 (defmethod relative-p ((route route-flavor))
   (with-slots (route) route
@@ -29,7 +29,7 @@
 (defmethod print-object ((obj route-flavor) stream)
   (format stream "#>~a>(~a ~s)"
           (string-downcase (type-of obj))
-	  (if (terminates obj) ":file" ":dir")
+	  (if (terminates-p obj) ":file" ":dir")
           (serialize-route obj)))
 
 (defgeneric validate-token (token flavor))
@@ -92,7 +92,7 @@
 
 	   (defmethod make-load-form ((path ,name) &optional environment)
 	     (declare (ignore environment))
-	     (list ',constructor (if (terminates path) :file :dir)
+	     (list ',constructor (if (terminates-p path) :file :dir)
 		   (serialize-route path)))
 
 	   (defmethod initialize-instance :after
@@ -101,11 +101,11 @@
 	       (when (or ,@(mapcar #'first fields))
 		 (error "No special fields allowed in relative paths"))))
 
-           (defmethod push-token ((route ,name) token &optional terminates)
+           (defmethod push-token ((route ,name) token &optional terminates-p)
              (with-slots ((inner route)) route
 	       (unless (validate-token token ',name)
 		 (error "Invalid token ~s pushed" token))
-               (let* ((new-route (push-token inner token terminates)))
+               (let* ((new-route (push-token inner token terminates-p)))
                  ,(emit-new 'new-route 'route))))
 
            (defmethod pop-token ((route ,name))
