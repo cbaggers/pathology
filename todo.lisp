@@ -34,7 +34,6 @@
 ;;   the idea is that the strings hold the constant parts of the token and the
 ;;   keywords indicate the kind of wildcard/special-char
 ;; - rename the platform specific routes to paths? (work out and do it)
-;; - call the validator in the correct funcs (do this in route?)
 
 ;; - add escaping to the posix serialize
 ;;   This one is a problem as escaping is specific to the shell
