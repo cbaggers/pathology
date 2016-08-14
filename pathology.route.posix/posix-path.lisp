@@ -3,14 +3,19 @@
 
 (def-route-flavor posix-path "/")
 
-(defmethod serialize-route ((route posix-path) &optional stream)
-  (format stream "~a~{~a~^/~}~@[/~]"
-	  (if (relative-p route) "" "/")
-	  (mapcar #'posix-escape (reverse (tokens route)))
-	  (not (terminates-p route))))
+(defmethod serialize-route ((route posix-path) &optional stream (escape t))
+  (let ((tokens (reverse (tokens route))))
+    (format stream "~a~{~a~^/~}~@[/~]"
+	    (if (relative-p route) "" "/")
+	    (if escape
+		(mapcar #'posix-escape tokens)
+		tokens)
+	    (not (terminates-p route)))))
 
 (defun posix-escape (token)
-  token)
+  (let ((unsafe " []*?"))
+    (labels ((fix (c) (if (find c unsafe) (format nil "\\~a" c) c)))
+      (format nil "~{~a~}" (map 'list #'fix token)))))
 
 (defmethod deserialize-route (kind string (as (eql 'posix-path)))
   (error "Pathology: Can only deserialize strings to posix-paths~%Received:~s"

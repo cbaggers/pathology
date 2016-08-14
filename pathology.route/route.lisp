@@ -187,8 +187,8 @@
 
 ;;----------------------------------------------------------------------
 
-(defmethod serialize-route ((route route) &optional stream)
-  (declare (ignore stream))
+(defmethod serialize-route ((route route) &optional stream (escape t))
+  (declare (ignore stream escape))
   (error "Basic route types have no serializable form"))
 
 (defmethod deserialize-route (kind string (as (eql 'route)))

@@ -30,7 +30,7 @@
   (format stream "#>~a>(~a ~s)"
           (string-downcase (type-of obj))
 	  (if (terminates-p obj) ":file" ":dir")
-          (serialize-route obj)))
+          (serialize-route obj nil nil)))
 
 (defgeneric validate-token (token flavor))
 
