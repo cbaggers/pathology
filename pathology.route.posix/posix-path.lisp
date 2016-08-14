@@ -21,6 +21,8 @@
 	 (first-raw (first split))
 	 (absolute (and (stringp first-raw) (uiop:emptyp first-raw)))
 	 (tokens (remove-if #'uiop:emptyp split)))
+    (when (and (eq kind :file) (char= (aref string (1- (length string))) #\/))
+      (error "The posix path for a file cannot end in /"))
     (values tokens (not absolute) (eq kind :file))))
 
 (defmethod validate-token ((token string) (flavor (eql 'posix-path)))
