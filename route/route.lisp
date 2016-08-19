@@ -28,7 +28,8 @@
 ;; naturally, can only happen on the relevant system
 
 (defclass incomplete-token ()
-  ((parts :initform nil :initarg :parts :reader parts)))
+  ((parts :initform nil :initarg :parts :reader parts)
+   (mapping :initform nil :initarg :mapping :reader mapping)))
 
 (defun valid-wild-pair (wild-pair)
   (and (= (length wild-pair) 2)
@@ -37,15 +38,19 @@
 
 (defmethod incomplete ((token string) (wild-pairs list))
   (assert (every #'valid-wild-pair wild-pairs))
-  (let ((tokens (list token)))
+  (let ((tokens (list token))
+        (used))
     (loop :for (char sym) :in wild-pairs :do
        (setf tokens (loop :for token :in tokens :append
-		       (if (stringp token)
-			   (intersperse
-			    (uiop:split-string token :separator (list char))
-			    sym)
-			   (list token)))))
-    (make-instance 'incomplete-token :parts tokens)))
+                       (if (stringp token)
+                           (let ((split (uiop:split-string token :separator (list char))))
+                             (when (> (length split) 1)
+                               (push (cons sym char) used))
+                             (intersperse split sym))
+                           (list token)))))
+    (make-instance 'incomplete-token
+                   :parts tokens
+                   :mapping used)))
 
 (defmethod incomplete-token-p ((token incomplete-token))
   t)

@@ -1,4 +1,47 @@
+;; stuff to do
+;; - serialize-route should not be public. Instead serialize-path-prefix and
+;;   serialize token should be created
+;; - Escaping should not be done on the path but instead the token (or
+;;   sub-token) make serialize-token take an :escape key arg that is then used
+;;   on the strings given by the now private serialize-route
+;; - make serialize-incomplete this uses the reverse map to serialized the
+;;   keyword parts of the incomplete token and uses serialize token & the
+;;   optional escaping function on them too
+;; - printing and make-load-form should never escape.
+;; - add make-load-form for incomplete-tokens
+;; - rename the platform specific routes to paths? (work out and do it)
+
+
+;; - add ntfs spec
+
+;; - work out if swapping route token store from list to extendable vector
+;;   would make sense
+
+;; - go on a performance sweep
+
+;; - path types are global...ehh
+
+
+;;----------------------------------------------------------------------
+
+;; Notes on escaping
+;;   This one is a problem as escaping is specific to the shell
+;;   Ah I think I was confused. Escaping is different for each shell, however
+;;   pathnames/filenames are specified by the posix standard including the
+;;   wildcard pattern stuff, so this should be fine.
+;;   http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_266
+;;   http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_13_02
+;;   ^^^^ SCRATCH MOST OF THIS :p ^^^^^
+;;   Escaping is too shell specific so we will take a token escaping function as
+;;   an arg to serialize. We will provide a default escaping func for each path
+;;   kind though.
+;;   .. Doesnt this mean that we also need unescaping func for deserialize too?
+
+
 ;; Note on deserializer
+;; - make different classes for absolute and relative paths, use the provided
+;;   path name for the base class
+;; - update any function that calls make-instance on some kind of path
 ;; - deserialize takes a whole string and returns tokens
 ;; - deserialize should remove escaping
 ;; - deserialize returns the following values:
@@ -26,27 +69,3 @@
 ;;   their tokens.
 ;;   They can use spaces, odd chars, whatever, if it passes the validator
 ;;   it's kosher
-
-
-;; stuff to do
-;; - incomplete-token should contain a list of parts
-;;   each part can be a string or keyword. We don't care what keywords they use.
-;;   the idea is that the strings hold the constant parts of the token and the
-;;   keywords indicate the kind of wildcard/special-char
-;; - rename the platform specific routes to paths? (work out and do it)
-
-;; - add escaping to the posix serialize
-;;   This one is a problem as escaping is specific to the shell
-;;   Ah I think I was confused. Escaping is different for each shell, however
-;;   pathnames/filenames are specified by the posix standard including the
-;;   wildcard pattern stuff, so this should be fine.
-;;   http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap03.html#tag_03_266
-;;   http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_13_02
-
-
-;; - add ntfs spec
-
-;; - swap route token store from list to extendable vector
-;; - generally go on a performance sweep
-
-;; - path types are global...ehh
