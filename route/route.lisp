@@ -58,6 +58,14 @@
 (defmethod incomplete-token-p (token)
   nil)
 
+
+(defun serialize-incomplete-token (token stream &optional escape)
+  (labels ((esc (x) (if (and escape (stringp x)) (funcall escape x) x))
+           (to-str (x) (if (keywordp x) (cdr (assoc x (mapping token))) x)))
+    (let* ((escaped (mapcar #'esc (parts token)))
+           (strings (mapcar #'to-str escaped)))
+      (format stream "~{~a~}" strings))))
+
 (defmethod make-instance :after ((i-tok incomplete-token) &key)
   (assert (every (lambda (x) (or (stringp x) (keywordp x)))
 		 (parts i-tok))))
@@ -228,3 +236,7 @@ deserialize this string to one.
 :string ~s
 :route-type route"
          string))
+
+(defmethod serialize-token ((token string) stream escape kind)
+  (declare (ignore kind))
+  (format stream "~a" (if escape (funcall escape token) token)))

@@ -4,16 +4,7 @@
 (defvar *posix-wild* '((#\[ :[) (#\] :]) (#\* :*) (#\? :?)))
 (defvar *posix-special* (concatenate 'string " " (mapcar #'first *posix-wild*)))
 
-(def-route-flavor posix-path "/")
-
-(defmethod serialize-route ((route posix-path) &optional stream (escape t))
-  (let ((tokens (reverse (tokens route))))
-    (format stream "~a~{~a~^/~}~@[/~]"
-	    (if (relative-p route) "" "/")
-	    (if escape
-		(mapcar #'posix-escape tokens)
-		tokens)
-	    (not (terminates-p route)))))
+(def-route-flavor posix-path "/" #\/)
 
 (defun posix-escape (token)
   (let ((unsafe *posix-special*))

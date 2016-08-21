@@ -2,8 +2,7 @@
 
 (defpackage #:pathology
   (:use #:cl #:pathology.route #:pathology.route.posix)
-  (:export :serialize-route
-	   :deserialize-route
+  (:export :deserialize-route
 	   :relative-p
 	   :incomplete-p
 	   :push-token

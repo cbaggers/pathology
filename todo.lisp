@@ -1,24 +1,17 @@
 ;; stuff to do
-;; - serialize-route should not be public. Instead serialize-path-prefix and
-;;   serialize token should be created
-;; - Escaping should not be done on the path but instead the token (or
-;;   sub-token) make serialize-token take an :escape key arg that is then used
-;;   on the strings given by the now private serialize-route
-;; - make serialize-incomplete this uses the reverse map to serialized the
-;;   keyword parts of the incomplete token and uses serialize token & the
-;;   optional escaping function on them too
-;; - printing and make-load-form should never escape.
-;; - add make-load-form for incomplete-tokens
+;;
 ;; - rename the platform specific routes to paths? (work out and do it)
-
-
+;;
+;; - maybe take control of deserialize-route and just have deserialize-prefix
+;;   and deserialize-token?
+;;
 ;; - add ntfs spec
-
+;;
 ;; - work out if swapping route token store from list to extendable vector
 ;;   would make sense
-
+;;
 ;; - go on a performance sweep
-
+;;
 ;; - path types are global...ehh
 
 
