@@ -1,18 +1,23 @@
 ;; stuff to do
 ;;
-;; - rename the platform specific routes to paths? (work out and do it)
+;; - rename the platform specific routes to paths.
 ;;
-;; - maybe take control of deserialize-route and just have deserialize-prefix
-;;   and deserialize-token?
+;; - work out how to add relative paths of different types
+;;   can we cast a rel-path to a route? then we can process it
+;;   for the target when adding
+;;
+;; - add escape and wild everywhere it makes sense. &key arg them?
+;;
+;; - make sure wild get ignored if escaped
 ;;
 ;; - add ntfs spec
 ;;
-;; - work out if swapping route token store from list to extendable vector
-;;   would make sense
+;; - path types are global. Let's allow using keyword names as well as regular
+;;   symbols. We will then use keywords for posix, ntfs, etc.
 ;;
-;; - go on a performance sweep
+;; - print-object for imcomplete tokens (make sure you test load-form
+;;   afterwards)
 ;;
-;; - path types are global...ehh
 
 
 ;;----------------------------------------------------------------------

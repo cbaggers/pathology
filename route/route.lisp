@@ -31,16 +31,12 @@
   ((parts :initform nil :initarg :parts :reader parts)
    (mapping :initform nil :initarg :mapping :reader mapping)))
 
-(defun valid-wild-pair (wild-pair)
-  (and (= (length wild-pair) 2)
-       (characterp (first wild-pair))
-       (keywordp (second wild-pair))))
-
-(defmethod incomplete ((token string) (wild-pairs list))
-  (assert (every #'valid-wild-pair wild-pairs))
+(defmethod incomplete ((token string) (wild-chars list))
+  (assert (every #'characterp wild-chars))
   (let ((tokens (list token))
         (used))
-    (loop :for (char sym) :in wild-pairs :do
+    (loop :for char :in wild-chars
+       :for sym := (make-symbol (string char)) :do
        (setf tokens (loop :for token :in tokens :append
                        (if (stringp token)
                            (let ((split (uiop:split-string token :separator (list char))))
@@ -226,17 +222,21 @@
 
 ;;----------------------------------------------------------------------
 
-(defmethod serialize-route ((route route) &optional stream (escape t))
+
+(defun serialize-route (route &optional stream escape)
+  (%serialize-route route stream escape))
+
+(defmethod %serialize-route ((route route) &optional stream (escape t))
   (declare (ignore stream escape))
   (error "Basic route types have no serializable form"))
 
-(defmethod deserialize-route (kind string (as (eql 'route)))
+(defmethod deserialize-token (string (as (eql 'route)))
   (error "Basic route types have no serializable form and as such you cannot
-deserialize this string to one.
+deserialize this string a token for one.
 :string ~s
 :route-type route"
          string))
 
-(defmethod serialize-token ((token string) stream escape kind)
-  (declare (ignore kind))
+(defmethod serialize-token ((token string) stream escape as)
+  (declare (ignore as))
   (format stream "~a" (if escape (funcall escape token) token)))
