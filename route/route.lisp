@@ -28,25 +28,22 @@
 ;; naturally, can only happen on the relevant system
 
 (defclass incomplete-token ()
-  ((parts :initform nil :initarg :parts :reader parts)
-   (mapping :initform nil :initarg :mapping :reader mapping)))
+  ((parts :initform nil :initarg :parts :reader parts)))
+
+(defmethod print-object ((itok incomplete-token) stream)
+  (format stream "#<ITOKEN (~{~s~^ ~})>" (parts itok)))
 
 (defmethod incomplete ((token string) (wild-chars list))
   (assert (every #'characterp wild-chars))
-  (let ((tokens (list token))
-        (used))
-    (loop :for char :in wild-chars
-       :for sym := (make-symbol (string char)) :do
+  (let ((tokens (list token)))
+    (loop :for char :in wild-chars :do
        (setf tokens (loop :for token :in tokens :append
                        (if (stringp token)
                            (let ((split (uiop:split-string token :separator (list char))))
-                             (when (> (length split) 1)
-                               (push (cons sym char) used))
-                             (intersperse split sym))
+                             (intersperse split char))
                            (list token)))))
     (make-instance 'incomplete-token
-                   :parts tokens
-                   :mapping used)))
+                   :parts tokens)))
 
 (defmethod incomplete-token-p ((token incomplete-token))
   t)
@@ -56,10 +53,9 @@
 
 
 (defun serialize-incomplete-token (token stream &optional escape)
-  (labels ((esc (x) (if (and escape (stringp x)) (funcall escape x) x))
-           (to-str (x) (if (keywordp x) (cdr (assoc x (mapping token))) x)))
+  (labels ((esc (x) (if (and escape (stringp x)) (funcall escape x) x)))
     (let* ((escaped (mapcar #'esc (parts token)))
-           (strings (mapcar #'to-str escaped)))
+           (strings (mapcar #'string escaped)))
       (format stream "~{~a~}" strings))))
 
 (defmethod make-instance :after ((i-tok incomplete-token) &key)
@@ -221,22 +217,3 @@
         :incomplete-token-count (count-if #'incomplete-token-p right-tokens))))))
 
 ;;----------------------------------------------------------------------
-
-
-(defun serialize-route (route &optional stream escape)
-  (%serialize-route route stream escape))
-
-(defmethod %serialize-route ((route route) &optional stream (escape t))
-  (declare (ignore stream escape))
-  (error "Basic route types have no serializable form"))
-
-(defmethod deserialize-token (string (as (eql 'route)))
-  (error "Basic route types have no serializable form and as such you cannot
-deserialize this string a token for one.
-:string ~s
-:route-type route"
-         string))
-
-(defmethod serialize-token ((token string) stream escape as)
-  (declare (ignore as))
-  (format stream "~a" (if escape (funcall escape token) token)))

@@ -13,6 +13,9 @@
 ;;     prefix is optional, but also come as a pair..
 ;;     what a pain in the ass
 ;;
+;; - we should take ownership of validation of incomplete-tokens, not the regular
+;;   validate-token though, that one is fine
+;;
 ;; - make sure wild get ignored if escaped
 ;;
 ;; - add ntfs spec
