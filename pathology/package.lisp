@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:pathology
-  (:use #:cl #:pathology.route #:pathology.route.posix)
+  (:use #:cl #:pathology.route #:pathology.posix)
   (:export :relative-p
 	   :incomplete-p
 	   :push-token

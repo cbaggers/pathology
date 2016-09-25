@@ -1,6 +1,6 @@
 ;;;; package.lisp
 
-(defpackage #:pathology.route.posix
+(defpackage #:pathology.posix
   (:use #:cl #:pathology.route)
   ;;(:export )
   )

@@ -1,6 +1,6 @@
 ;;;; pathology.route.asd
 
-(asdf:defsystem #:pathology.route.posix
+(asdf:defsystem #:pathology.posix
   :description "Use pathology.route's route type to define a simple posix path type"
   :author "Chris Bagley <techsnuffle@gmail.com>"
   :license "BSD 2 Clause"

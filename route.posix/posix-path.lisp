@@ -1,4 +1,4 @@
-(in-package #:pathology.route.posix)
+(in-package #:pathology.posix)
 (named-readtables:in-readtable pathology.route::path-syntax)
 
 ;;------------------------------------------------------------
