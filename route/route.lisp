@@ -90,12 +90,12 @@
 ;;----------------------------------------------------------------------
 
 (defun relative (kind &rest tokens)
-  (assert (or (eq kind :leaf) (eq kind :branch)))
-  (route* t (eq kind :leaf) tokens))
+  (assert (find kind '(:leaf :file :branch :dir)))
+  (route* t (or (eq kind :leaf) (eq kind :file)) tokens))
 
 (defun absolute (kind &rest tokens)
-  (assert (or (eq kind :leaf) (eq kind :branch)))
-  (route* nil (eq kind :leaf) tokens))
+  (assert (find kind '(:leaf :file :branch :dir)))
+  (route* nil (or (eq kind :leaf) (eq kind :file)) tokens))
 
 (defmethod make-relative ((route route))
   (if (relative-p route)
