@@ -179,8 +179,7 @@ All path types must have this method implemented"
          (defmethod %clone-to-rel ((route ,name) &optional new-inner-route)
            (make-instance ',name :route new-inner-route))
 
-         (defmethod ,constructor (kind &optional (path-string ,default-path)
-                                         (escape ,escape))
+         (defmethod ,constructor (kind path-string &key (escape ,escape))
            (assert (find kind '(:file :dir)))
            (assert (stringp path-string))
            (assert (or (null escape) (functionp escape) (characterp escape)))
