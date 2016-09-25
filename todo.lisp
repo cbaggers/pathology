@@ -12,6 +12,10 @@
 ;;   afterwards)
 ;;
 ;; - validate token called too late
+;;
+;; - Seems odd to store func in every path object
+;;
+;; - How can we say file or dir when wild?
 
 
 ;;----------------------------------------------------------------------

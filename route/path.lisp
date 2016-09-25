@@ -2,43 +2,43 @@
 
 ;;----------------------------------------------------------------------
 
-(defclass route-flavor ()
+(defclass path ()
   ((route
-    :initarg :route :initform (error "flavor must be created with route"))
+    :initarg :route :initform (error "path must be created with route"))
    (validator
     :initarg :validator :initform nil)
    (prefix-serializor
     :initarg :prefix-serializor
-    :initform (error "flavor must be created with a prefix-serializor"))
+    :initform (error "path kind must be created with a prefix-serializor"))
    (prefix-deserializor
     :initarg :prefix-deserializor
-    :initform (error "flavor must be created with a prefix-deserializor"))))
+    :initform (error "path kind must be created with a prefix-deserializor"))))
 
 (defgeneric %clone (original &optional new-inner-route))
 (defgeneric %clone-to-rel (original &optional new-inner-route))
 
-(defmethod terminates-p ((route route-flavor))
+(defmethod terminates-p ((route path))
   (with-slots (route) route
     (when route
       (terminates-p route))))
 
-(defmethod relative-p ((route route-flavor))
+(defmethod relative-p ((route path))
   (with-slots (route) route
     (if route
         (relative-p route)
         t)))
 
-(defmethod incomplete-p ((route route-flavor))
+(defmethod incomplete-p ((route path))
   (with-slots (route) route
     (when route
       (incomplete-p route))))
 
-(defmethod tokens ((route route-flavor))
+(defmethod tokens ((route path))
   (with-slots (route) route
     (when route
       (tokens route))))
 
-(defmethod print-object ((obj route-flavor) stream)
+(defmethod print-object ((obj path) stream)
   (format stream "#>~a>(~a ~s)"
           (string-downcase (type-of obj))
 	  (if (terminates-p obj) ":file" ":dir")
@@ -58,14 +58,14 @@
   (every (lambda (x) (%validate-token x validator))
 	 (remove-if-not #'stringp (parts token))))
 
-(defmethod push-token ((route route-flavor) token &optional terminates-p)
+(defmethod push-token ((route path) token &optional terminates-p)
   (with-slots ((inner route)) route
     (unless (validate-token token route)
       (error "Invalid token ~s pushed" token))
     (let* ((new-route (push-token inner token terminates-p)))
       (%clone route new-route))))
 
-(defmethod pop-token ((route route-flavor))
+(defmethod pop-token ((route path))
   (with-slots ((inner route)) route
     (when inner
       (multiple-value-bind (new-route token) (pop-token inner)
@@ -74,14 +74,14 @@
            (%clone route new-route)
            token))))))
 
-(defmethod join-routes ((first route-flavor) (second route-flavor) &rest rest)
+(defmethod join-routes ((first path) (second path) &rest rest)
   (let ((new-route (apply #'join-routes
                           (slot-value first 'route)
                           (slot-value second 'route)
                           rest)))
     (%clone first new-route)))
 
-(defmethod split-route ((route route-flavor) (at integer))
+(defmethod split-route ((route path) (at integer))
   (with-slots ((inner route)) route
     (destructuring-bind (l r) (split-route inner at)
       (list (%clone route l)
@@ -171,7 +171,7 @@
            (eq 'function (first x))
            (symbolp (second x)))))
 
-(defmacro def-route-flavor (name seperator escape wild-chars
+(defmacro def-path-kind (name seperator escape wild-chars
                             validator prefix-serializor prefix-deserializor
                             &body additional-fields)
   (destructuring-bind (name &key constructor) (if (listp name) name (list name))
@@ -195,7 +195,7 @@
 				    (intern (symbol-name name) :keyword))))
 			  additional-fields)))
       `(progn
-         (defclass ,name (route-flavor)
+         (defclass ,name (path)
            ,(cons
              `(seperator :initform ,seperator :reader token-seperator)
              (loop :for (name initform arg) :in fields :collect

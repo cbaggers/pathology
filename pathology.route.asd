@@ -9,4 +9,4 @@
   :components ((:file "route/package")
                (:file "route/route")
 	       (:file "route/reader")
-	       (:file "route/flavor")))
+	       (:file "route/path")))
