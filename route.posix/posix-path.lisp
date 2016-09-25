@@ -3,7 +3,7 @@
 
 ;;------------------------------------------------------------
 
-(def-route-flavor posix-path #\/ nil "[]*?"
+(def-route-flavor posix-path #\/ #\\ "[]*?"
     #'validate-posix-token
     #'serialize-posix-prefix
     #'deserialize-posix-prefix)

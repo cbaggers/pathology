@@ -33,18 +33,6 @@
 (defmethod print-object ((itok incomplete-token) stream)
   (format stream "#<ITOKEN (~{~s~^ ~})>" (parts itok)))
 
-(defmethod incomplete ((token string) (wild-chars list))
-  (assert (every #'characterp wild-chars))
-  (let ((tokens (list token)))
-    (loop :for char :in wild-chars :do
-       (setf tokens (loop :for token :in tokens :append
-                       (if (stringp token)
-                           (let ((split (uiop:split-string token :separator (list char))))
-                             (intersperse split char))
-                           (list token)))))
-    (make-instance 'incomplete-token
-                   :parts tokens)))
-
 (defmethod incomplete-token-p ((token incomplete-token))
   t)
 
@@ -52,11 +40,8 @@
   nil)
 
 
-(defun serialize-incomplete-token (token stream &optional escape)
-  (labels ((esc (x) (if (and escape (stringp x)) (funcall escape x) x)))
-    (let* ((escaped (mapcar #'esc (parts token)))
-           (strings (mapcar #'string escaped)))
-      (format stream "~{~a~}" strings))))
+(defun serialize-incomplete-token (token stream)
+  (format stream "~{~a~}" (mapcar #'string (parts token))))
 
 (defmethod make-instance :after ((i-tok incomplete-token) &key)
   (assert (every (lambda (x) (or (stringp x) (keywordp x)))

@@ -42,7 +42,7 @@
   (format stream "#>~a>(~a ~s)"
           (string-downcase (type-of obj))
 	  (if (terminates-p obj) ":file" ":dir")
-          (serialize-path obj nil nil)))
+          (serialize-path obj nil)))
 
 
 (defun validate-token (token route)
@@ -87,7 +87,7 @@
       (list (%clone route l)
             (%clone-to-rel route r)))))
 
-(defun serialize-path (route &optional stream escape)
+(defun serialize-path (route &optional stream)
   (let* ((tokens (reverse (tokens route)))
          (seperator (token-seperator route))
          (template (format nil "~~a~~{~~a~~^~c~~}~~@[~c~~]"
@@ -96,7 +96,7 @@
             (if (relative-p route) "" (serialize-prefix route))
             (mapcar (lambda (token)
                       (if (typep token 'incomplete-token)
-                          (serialize-incomplete-token token stream escape)
+                          (serialize-incomplete-token token nil)
                           token))
                     tokens)
             (not (terminates-p route)))))
@@ -106,26 +106,41 @@
   (assert (stringp string))
   (assert (functionp escape))
   (assert (characterp seperator))
-  (let (results)
-    (labels ((new () (push (make-array 0 :element-type 'character
-                                       :fill-pointer 0 :adjustable t)
-                           results))
-             (add (c) (vector-push-extend c (first results))))
+  (let (results pending)
+    (labels ((wild-p (c)
+               (member c wild-chars))
+             (ugly-str ()
+               (make-array 0 :element-type 'character
+                           :fill-pointer 0 :adjustable t))
+             (new ()
+               (when pending
+                 (push (reverse pending) results))
+               (setf pending (list (ugly-str))))
+             (add (c)
+               (vector-push-extend c (first pending)))
+             (wild (c)
+               (push c pending)
+               (push (ugly-str) pending)))
       (new)
       (with-input-from-string (s string)
         (loop :for c := (read-char s nil) :while c :do
            (cond
              ((funcall escape c) (add c) (add (read-char s)))
              ((char= c seperator) (new))
+             ((wild-p c) (wild c))
              (t (add c)))))
-      (labels ((wild-p (c) (member c wild-chars)))
-        (nreverse (mapcar (lambda (token)
-                            (if (some #'wild-p token)
-                                (incomplete token wild-chars)
-                                token))
-                          results))))))
+      (when pending
+        (push pending results))
+      (nreverse (mapcar (lambda (token)
+                          (let ((l (length token)))
+                            (cond ((= 0 l) (error "Token Bug:~%~s~%~s"
+                                                  results pending))
+                                  ((= 1 l) (first token))
+                                  (t (make-instance 'incomplete-token
+                                                    :parts token)))))
+                        results)))))
 
-(defun deserialize-path (kind string as seperator escape wild-chars)
+(defun %deserialize-path (kind string as seperator escape wild-chars)
   (let ((escape (cond ((functionp escape) escape)
                       ((characterp escape) (lambda (c) (char= c escape)))
                       (t (lambda (c) (declare (ignore c)) nil)))))
@@ -199,12 +214,11 @@
          (defmethod %clone-to-rel ((route ,name) &optional new-inner-route)
            (make-instance ',name :route new-inner-route))
 
-         (defmethod ,constructor (kind path-string &key (escape ,escape))
+         (defmethod ,constructor (kind path-string)
            (assert (find kind '(:file :dir)))
            (assert (stringp path-string))
-           (assert (or (null escape) (functionp escape) (characterp escape)))
            (multiple-value-bind (tokens relative key-vals)
-               (deserialize-path kind path-string ',name ,seperator ,escape
+               (%deserialize-path kind path-string ',name ,seperator ,escape
                                    ',(map 'list #'identity wild-chars))
              (declare (ignorable key-vals))
              (let ((terminated (eq kind :file)))
@@ -220,6 +234,10 @@
                      ',name :route route :validator ,validator
                      :prefix-serializor ,prefix-serializor
                      :prefix-deserializor ,prefix-deserializor))))))
+
+         (defmethod deserialize-path ((as (eql ',name)) kind string)
+           (declare (ignore as))
+           (,constructor kind string))
 
          (defmethod deserialize-prefix (route (as (eql ',name)))
            (funcall ,prefix-deserializor route))

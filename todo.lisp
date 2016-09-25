@@ -6,13 +6,6 @@
 ;;   can we cast a rel-path to a route? then we can process it
 ;;   for the target when adding
 ;;
-;; - add escape and wild everywhere it makes sense. &key arg them?
-;;   - oh dear. Serialize is bound to deserialize, they are always a pair
-;;     so why am I allowing this? why? I should make a flavour require you
-;;     to specify the deserialize & serialize token functions up front.
-;;     prefix is optional, but also come as a pair..
-;;     what a pain in the ass
-;;
 ;; - we should take ownership of validation of incomplete-tokens, not the regular
 ;;   validate-token though, that one is fine
 ;;
