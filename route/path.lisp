@@ -21,7 +21,7 @@
   (with-slots (route) route
     (if route
         (relative-p route)
-        t)))
+        nil)))
 
 (defmethod absolute-p ((route path))
   (not (relative-p route)))
@@ -109,7 +109,7 @@ plain route, which you can then pass to #'join-routes"
                           (serialize-incomplete-token token nil)
                           token))
                     tokens)
-            (not (terminates-p route)))))
+            (and tokens (not (terminates-p route))))))
 
 
 (defun %deserialize-tokens (string escape seperator wild-chars)

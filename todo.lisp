@@ -1,7 +1,5 @@
 ;; stuff to do
 ;;
-;; - validate token called too late
-;;
 ;; - How can we say file or dir when wild?
 
 ;;----------------------------------------------------------------------
