@@ -6,19 +6,12 @@
 ;;   can we cast a rel-path to a route? then we can process it
 ;;   for the target when adding
 ;;
-;; - we should take ownership of validation of incomplete-tokens, not the regular
-;;   validate-token though, that one is fine
-;;
-;; - make sure wild get ignored if escaped
-;;
 ;; - add ntfs spec
-;;
-;; - path types are global. Let's allow using keyword names as well as regular
-;;   symbols. We will then use keywords for posix, ntfs, etc.
 ;;
 ;; - print-object for imcomplete tokens (make sure you test load-form
 ;;   afterwards)
 ;;
+;; - validate token called too late
 
 
 ;;----------------------------------------------------------------------

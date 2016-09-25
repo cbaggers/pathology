@@ -3,11 +3,10 @@
 
 ;;------------------------------------------------------------
 
-(def-route-flavor posix-path #\/ #\\ "[]*?"
+(def-route-flavor (posix :constructor posix-path) #\/ #\\ "[]*?"
     #'validate-posix-token
     #'serialize-posix-prefix
     #'deserialize-posix-prefix)
-
 
 (defun validate-posix-token (token)
   (null (find #\/ token)))

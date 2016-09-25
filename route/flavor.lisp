@@ -188,7 +188,6 @@
     (assert (func-arg-p prefix-deserializor :nullable nil))
     (let ((constructor (or constructor name))
           (validator (or validator (lambda (x) x)))
-	  (name-kwd (intern (symbol-name name) :keyword))
 	  (fields (mapcar (lambda (f)
 			    (destructuring-bind (name initform)
 				(if (listp f) f (list f))
@@ -243,7 +242,7 @@
            (funcall ,prefix-deserializor route))
 
          (defmethod pathology.route::%make-path
-             (path-form (path-kind-name (eql ,name-kwd)))
+             (path-form (path-kind-name (eql ',name)))
            (apply #',constructor path-form ))
 
          (defmethod make-load-form ((path ,name) &optional environment)
