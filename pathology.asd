@@ -6,5 +6,4 @@
   :license "BSD 2 Clause"
   :serial t
   :depends-on (#:pathology.route #:pathology.posix)
-  :components ((:file "pathology/package")
-               (:file "pathology/base")))
+  :components ((:file "package")))

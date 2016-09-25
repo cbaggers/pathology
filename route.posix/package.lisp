@@ -2,5 +2,4 @@
 
 (defpackage #:pathology.posix
   (:use #:cl #:pathology.route)
-  ;;(:export )
-  )
+  (:export :posix-path :posix))

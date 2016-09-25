@@ -1,5 +1,5 @@
 (in-package #:pathology.posix)
-(named-readtables:in-readtable pathology.route::path-syntax)
+(named-readtables:in-readtable :pathology.reader)
 
 ;;------------------------------------------------------------
 
@@ -18,3 +18,5 @@
 (defun deserialize-posix-prefix (string)
   (let ((absolute (char= #\/ (aref string 0))))
     (values (not absolute) (subseq string (if absolute 1 0)))))
+
+;;------------------------------------------------------------

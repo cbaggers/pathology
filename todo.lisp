@@ -1,22 +1,8 @@
 ;; stuff to do
 ;;
-;; - rename the platform specific routes to paths.
-;;
-;; - work out how to add relative paths of different types
-;;   can we cast a rel-path to a route? then we can process it
-;;   for the target when adding
-;;
-;; - add ntfs spec
-;;
-;; - print-object for imcomplete tokens (make sure you test load-form
-;;   afterwards)
-;;
 ;; - validate token called too late
 ;;
-;; - Seems odd to store func in every path object
-;;
 ;; - How can we say file or dir when wild?
-
 
 ;;----------------------------------------------------------------------
 

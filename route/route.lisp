@@ -11,18 +11,20 @@
 
 (defmethod print-object ((route route) stream)
   (let* ((tokens (reverse (tokens route)))
-         (tokens (if (terminates-p route)
-                     (append (butlast tokens)
-                             (cons :> (last tokens)))
-                     tokens)))
-    (format stream "#>>~s" tokens)))
-
+         (name (if (relative-p route) "relative" "absolute"))
+         (head (if (terminates-p route) ":leaf" ":branch")))
+    (format stream "#>~a>(~a ~{~s~^ ~})" name head tokens)))
 
 (defmethod incomplete-p ((route route))
   (> (incomplete-token-count route) 0))
 
+(defmethod absolute-p ((route route))
+  (not (relative-p route)))
+
 ;;----------------------------------------------------------------------
 
+(defmethod route ((obj route))
+  obj)
 
 ;; these can only be expanded whilst route is being actualized which,
 ;; naturally, can only happen on the relevant system
@@ -58,9 +60,6 @@
 ;;----------------------------------------------------------------------
 
 
-(defun terminate-markerp (x)
-  (and (symbolp x) (string-equal x ">")))
-
 (defun can-be-encoded-by-utf8 (token)
   (declare (ignore token))
   t)
@@ -90,14 +89,18 @@
 
 ;;----------------------------------------------------------------------
 
+(defun relative (kind &rest tokens)
+  (assert (or (eq kind :leaf) (eq kind :branch)))
+  (route* t (eq kind :leaf) tokens))
 
-(defmethod route (relative? &rest tokens)
-  (assert (every (lambda (x) (or (typep x 'token)
-                                 (terminate-markerp x)))
-                 tokens))
-  (let* ((terminates-p? (member-if #'terminate-markerp tokens))
-         (tokens (remove-if #'terminate-markerp tokens)))
-    (route* relative? terminates-p? tokens)))
+(defun absolute (kind &rest tokens)
+  (assert (or (eq kind :leaf) (eq kind :branch)))
+  (route* nil (eq kind :leaf) tokens))
+
+(defmethod make-relative ((route route))
+  (if (relative-p route)
+      route
+      (route* t (terminates-p route) (reverse (tokens route)))))
 
 (defmethod route* (relative? terminated? tokens)
   (assert (every (lambda (x) (typep x 'token))
@@ -200,5 +203,22 @@
         :terminates-p (terminates-p route)
         :relative-p t
         :incomplete-token-count (count-if #'incomplete-token-p right-tokens))))))
+
+;;----------------------------------------------------------------------
+
+(defmethod subseq-route (route start &optional end)
+  (assert (integerp start))
+  (assert (or (and (integerp end) (>= end start))
+              (null end)))
+  (let ((len (length (tokens route))))
+    (assert (and (<= start len) (or (null end) (<= end len))) nil
+            "Pathology: subseq-route out of bounds~%start:~s~%end:~s~%route:~s~%length:~s"
+            start end route len)
+    (cond
+      ((equal start end) nil)
+      ((and (= start 0) (null end)) route)
+      ((= start 0) (first (split-route route end)))
+      ((null end) (second (split-route route start)))
+      (t (first (split-route (second (split-route route start)) (- end start)))))))
 
 ;;----------------------------------------------------------------------

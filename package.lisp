@@ -1,13 +1,11 @@
 ;;;; package.lisp
 
-(defpackage #:pathology.route
-  (:use #:cl #:named-readtables)
-  (:export :route
-           :relative
+(defpackage #:pathology
+  (:use #:cl #:pathology.route #:pathology.posix)
+  (:export :relative
            :absolute
            :absolute-p
            :relative-p
-           :make-relative
            :terminates-p
            :incomplete-p
            :parts
@@ -16,8 +14,7 @@
            :pop-token
            :join-routes
            :split-route
-           :subseq-route
            :def-path-kind
            :serialize-path
            :deserialize-path
-           :path-syntax))
+           :posix))

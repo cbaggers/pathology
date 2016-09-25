@@ -4,15 +4,10 @@
 
 (defclass path ()
   ((route
-    :initarg :route :initform (error "path must be created with route"))
-   (validator
-    :initarg :validator :initform nil)
-   (prefix-serializor
-    :initarg :prefix-serializor
-    :initform (error "path kind must be created with a prefix-serializor"))
-   (prefix-deserializor
-    :initarg :prefix-deserializor
-    :initform (error "path kind must be created with a prefix-deserializor"))))
+    :initarg :route :initform (error "path must be created with route"))))
+
+(defmethod route ((obj path))
+  (slot-value obj 'route))
 
 (defgeneric %clone (original &optional new-inner-route))
 (defgeneric %clone-to-rel (original &optional new-inner-route))
@@ -27,6 +22,9 @@
     (if route
         (relative-p route)
         t)))
+
+(defmethod absolute-p ((route path))
+  (not (relative-p route)))
 
 (defmethod incomplete-p ((route path))
   (with-slots (route) route
@@ -43,11 +41,6 @@
           (string-downcase (type-of obj))
 	  (if (terminates-p obj) ":file" ":dir")
           (serialize-path obj nil)))
-
-
-(defun validate-token (token route)
-  (with-slots (validator) route
-    (%validate-token token validator)))
 
 (defun %validate-token (token validator)
   (if (typep token 'incomplete-token)
@@ -74,10 +67,27 @@
            (%clone route new-route)
            token))))))
 
+(defmethod make-relative ((route path))
+  (with-slots ((inner route)) route
+    (%clone route (make-relative inner))))
+
 (defmethod join-routes ((first path) (second path) &rest rest)
+  (if (not (eq (type-of first) (type-of second)))
+      (error "Pathology: The two paths you tried to join are of different kind:~%~s~%~s~
+If you are sure the path tokens from the second pathwould be valid
+in the first path you can use #'route on the second path to convert it to a
+plain route, which you can then pass to #'join-routes"
+             first second)
+      (let ((new-route (apply #'join-routes
+                              (slot-value first 'route)
+                              (slot-value second 'route)
+                              rest)))
+        (%clone first new-route))))
+
+(defmethod join-routes ((first path) (second route) &rest rest)
   (let ((new-route (apply #'join-routes
                           (slot-value first 'route)
-                          (slot-value second 'route)
+                          second
                           rest)))
     (%clone first new-route)))
 
@@ -158,10 +168,6 @@
                 relative
                 key-vals)))))
 
-(defun serialize-prefix (route)
-  (with-slots (prefix-serializor) route
-    (funcall prefix-serializor route)))
-
 ;;----------------------------------------------------------------------
 
 (defun func-arg-p (x &key (nullable t))
@@ -176,8 +182,9 @@
                             &body additional-fields)
   (destructuring-bind (name &key constructor) (if (listp name) name (list name))
     (assert (symbolp name))
+    (assert (not (string= (string-downcase name) "relative")))
+    (assert (not (string= (string-downcase name) "absolute")))
     (assert (symbolp constructor))
-    (assert (every #'symbolp additional-fields))
     (assert (characterp seperator))
     (assert (stringp wild-chars))
     (assert (or (null escape)
@@ -207,7 +214,7 @@
            (make-instance
             ',name
             :route new-inner-route
-            ,@(loop :for (name initform arg) :in fields :collect
+            ,@(loop :for (name initform arg) :in fields :append
                  `(,arg (,name route)))))
 
          (defmethod %clone-to-rel ((route ,name) &optional new-inner-route)
@@ -222,21 +229,25 @@
              (declare (ignorable key-vals))
              (let ((terminated (eq kind :file)))
                (,@(if fields
-                      `(destructuring-bind ,(mapcar (lambda (x) (subseq x 0 2))
-                                                    fields)
+                      `(destructuring-bind
+                             (&key ,@(mapcar (lambda (x) (subseq x 0 2))
+                                             fields))
                            key-vals)
                       `(progn))
                   (loop :for token :in tokens :do
                      (%validate-token token ,validator))
                   (let ((route (route* relative terminated tokens)))
                     (make-instance
-                     ',name :route route :validator ,validator
-                     :prefix-serializor ,prefix-serializor
-                     :prefix-deserializor ,prefix-deserializor))))))
+                     ',name :route route
+                     ,@(mapcan (lambda (f) (list (third f) (first f)))
+                               fields)))))))
 
          (defmethod deserialize-path ((as (eql ',name)) kind string)
            (declare (ignore as))
            (,constructor kind string))
+
+         (defmethod serialize-prefix ((route ,name))
+           (funcall ,prefix-serializor route))
 
          (defmethod deserialize-prefix (route (as (eql ',name)))
            (funcall ,prefix-deserializor route))
@@ -249,6 +260,9 @@
            (declare (ignore environment))
            (list ',constructor (if (terminates-p path) :file :dir)
                  (serialize-path path)))
+
+         (defmethod validate-token (token (route ,name))
+           (%validate-token token ,validator))
 
          (defmethod initialize-instance :after
            ((path ,name) &key ,@(mapcar #'first fields))
