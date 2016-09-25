@@ -150,7 +150,7 @@ plain route, which you can then pass to #'join-routes"
                                                     :parts token)))))
                         results)))))
 
-(defun %deserialize-path (kind string as seperator escape wild-chars)
+(defun %deserialize-path (kind string as seperator escape wild-chars validator)
   (let ((escape (cond ((functionp escape) escape)
                       ((characterp escape) (lambda (c) (char= c escape)))
                       (t (lambda (c) (declare (ignore c)) nil)))))
@@ -163,6 +163,9 @@ plain route, which you can then pass to #'join-routes"
         (when (and (eq kind :file) (equal (car (last result)) ""))
           (error "The ~s path for a file cannot end in ~c"
                  (string-downcase (symbol-name as)) seperator))
+        ;;
+        (loop :for token :in result :do
+           (%validate-token token validator))
         ;;
         (values result
                 relative
@@ -178,8 +181,8 @@ plain route, which you can then pass to #'join-routes"
            (symbolp (second x)))))
 
 (defmacro def-path-kind (name seperator escape wild-chars
-                            validator prefix-serializor prefix-deserializor
-                            &body additional-fields)
+                         validator prefix-serializor prefix-deserializor
+                         &body additional-fields)
   (destructuring-bind (name &key constructor) (if (listp name) name (list name))
     (assert (symbolp name))
     (assert (not (string= (string-downcase name) "relative")))
@@ -225,7 +228,8 @@ plain route, which you can then pass to #'join-routes"
            (assert (stringp path-string))
            (multiple-value-bind (tokens relative key-vals)
                (%deserialize-path kind path-string ',name ,seperator ,escape
-                                   ',(map 'list #'identity wild-chars))
+                                  ',(map 'list #'identity wild-chars)
+                                  ,validator)
              (declare (ignorable key-vals))
              (let ((terminated (eq kind :file)))
                (,@(if fields
@@ -234,8 +238,6 @@ plain route, which you can then pass to #'join-routes"
                                              fields))
                            key-vals)
                       `(progn))
-                  (loop :for token :in tokens :do
-                     (%validate-token token ,validator))
                   (let ((route (route* relative terminated tokens)))
                     (make-instance
                      ',name :route route
