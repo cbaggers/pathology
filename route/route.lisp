@@ -231,7 +231,7 @@
 
 ;;----------------------------------------------------------------------
 
-(defgeneric deserialize-pathname (pathname)
+(defgeneric route-from-pathname (pathname)
   (:method (pathname)
     (let* ((path (uiop:ensure-pathname pathname))
            (absolute (uiop:absolute-pathname-p path))

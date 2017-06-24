@@ -22,5 +22,5 @@
            :def-path-kind
            :serialize-path
            :deserialize-path
-           :deserialize-pathname
+           :route-from-pathname
            :path-syntax))
