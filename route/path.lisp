@@ -171,6 +171,9 @@ plain route, which you can then pass to #'join-routes"
                 relative
                 key-vals)))))
 
+(defgeneric promote-route-to
+    (route path-kind &rest keys &key &allow-other-keys))
+
 ;;----------------------------------------------------------------------
 
 (defun func-arg-p (x &key (nullable t))
@@ -243,6 +246,20 @@ plain route, which you can then pass to #'join-routes"
                      ',name :route route
                      ,@(mapcan (lambda (f) (list (third f) (first f)))
                                fields)))))))
+
+         (defmethod promote-route-to ((path-kind (eql ',name)) (route route)
+                                      &rest keys &key &allow-other-keys)
+           (declare (ignorable keys path-kind))
+           (let ((validator ,validator))
+             (loop :for token :in (tokens route) :always
+                (%validate-token token validator)))
+           (,@(if fields
+                  `(destructuring-bind
+                         (&key ,@(mapcar (lambda (x) (subseq x 0 2))
+                                         fields))
+                       keys)
+                  `(progn))
+              (make-instance ',name :route route)))
 
          (defmethod deserialize-path ((as (eql ',name)) kind string)
            (declare (ignore as))
