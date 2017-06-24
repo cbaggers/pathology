@@ -1,10 +1,12 @@
 ;;;; package.lisp
 
-(defpackage #:pathology.route
-  (:use #:cl #:named-readtables)
+(uiop:define-package #:pathology.route
+    (:use #:cl #:named-readtables)
   (:export :route
            :relative
            :absolute
+           :relative*
+           :absolute*
            :absolute-p
            :relative-p
            :make-relative

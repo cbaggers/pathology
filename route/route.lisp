@@ -97,6 +97,14 @@
   (assert (find kind '(:leaf :file :branch :dir)))
   (route* nil (or (eq kind :leaf) (eq kind :file)) tokens))
 
+(defun relative* (kind tokens)
+  (assert (find kind '(:leaf :file :branch :dir)))
+  (route* t (or (eq kind :leaf) (eq kind :file)) tokens))
+
+(defun absolute* (kind tokens)
+  (assert (find kind '(:leaf :file :branch :dir)))
+  (route* nil (or (eq kind :leaf) (eq kind :file)) tokens))
+
 (defmethod make-relative ((route route))
   (if (relative-p route)
       route
