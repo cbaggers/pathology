@@ -22,4 +22,5 @@
            :def-path-kind
            :serialize-path
            :deserialize-path
+           :deserialize-pathname
            :path-syntax))

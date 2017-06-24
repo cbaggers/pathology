@@ -230,3 +230,20 @@
       (t (first (split-route (second (split-route route start)) (- end start)))))))
 
 ;;----------------------------------------------------------------------
+
+(defgeneric deserialize-pathname (pathname)
+  (:method (pathname)
+    (let* ((path (uiop:ensure-pathname pathname))
+           (absolute (uiop:absolute-pathname-p path))
+           (is-file (uiop:file-pathname-p path))
+           (kind (if is-file :file :dir))
+           (name (if (pathname-type path)
+                     (format nil "~a.~a"
+                             (pathname-name path)
+                             (pathname-type path))
+                     (pathname-name path)))
+           (tokens (append (rest (pathname-directory path))
+                           (when name (list name)))))
+      (if absolute
+          (absolute* kind tokens)
+          (relative* kind tokens)))))
