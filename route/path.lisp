@@ -39,7 +39,7 @@
 (defmethod print-object ((obj path) stream)
   (format stream "#>~a>(~a ~s)"
           (string-downcase (type-of obj))
-	  (if (terminates-p obj) ":file" ":dir")
+          (if (terminates-p obj) ":file" ":dir")
           (serialize-path obj nil)))
 
 (defun %validate-token (token validator)
@@ -49,7 +49,7 @@
 
 (defun validate-incomplete-token (token validator)
   (every (lambda (x) (%validate-token x validator))
-	 (remove-if-not #'stringp (parts token))))
+         (remove-if-not #'stringp (parts token))))
 
 (defmethod push-token ((route path) token &optional terminates-p)
   (with-slots ((inner route)) route
@@ -176,6 +176,11 @@ plain route, which you can then pass to #'join-routes"
 
 ;;----------------------------------------------------------------------
 
+(defgeneric deserialize-path (as kind string))
+(defgeneric serialize-prefix (route))
+(defgeneric deserialize-prefix (route as))
+(defgeneric validate-token (token route))
+
 (defun func-arg-p (x &key (nullable t))
   (or (when nullable (null x))
       (and (listp x)
@@ -201,12 +206,12 @@ plain route, which you can then pass to #'join-routes"
     (assert (func-arg-p prefix-deserializor :nullable nil))
     (let ((constructor (or constructor name))
           (validator (or validator (lambda (x) x)))
-	  (fields (mapcar (lambda (f)
-			    (destructuring-bind (name initform)
-				(if (listp f) f (list f))
-			      (list name initform
-				    (intern (symbol-name name) :keyword))))
-			  additional-fields)))
+          (fields (mapcar (lambda (f)
+                            (destructuring-bind (name initform)
+                                (if (listp f) f (list f))
+                              (list name initform
+                                    (intern (symbol-name name) :keyword))))
+                          additional-fields)))
       `(progn
          (defclass ,name (path)
            ,(cons
@@ -226,7 +231,7 @@ plain route, which you can then pass to #'join-routes"
          (defmethod %clone-to-rel ((route ,name) &optional new-inner-route)
            (make-instance ',name :route new-inner-route))
 
-         (defmethod ,constructor (kind path-string)
+         (defun ,constructor (kind path-string)
            (assert (find kind '(:file :dir)))
            (assert (stringp path-string))
            (multiple-value-bind (tokens relative key-vals)

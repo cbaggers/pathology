@@ -15,13 +15,19 @@
          (head (if (terminates-p route) ":leaf" ":branch")))
     (format stream "#>~a>(~a ~{~s~^ ~})" name head tokens)))
 
+(defgeneric incomplete-p (route))
+
 (defmethod incomplete-p ((route route))
   (> (incomplete-token-count route) 0))
+
+(defgeneric absolute-p (route))
 
 (defmethod absolute-p ((route route))
   (not (relative-p route)))
 
 ;;----------------------------------------------------------------------
+
+(defgeneric route (obj))
 
 (defmethod route ((obj route))
   obj)
@@ -35,19 +41,20 @@
 (defmethod print-object ((itok incomplete-token) stream)
   (format stream "#<ITOKEN (~{~s~^ ~})>" (parts itok)))
 
+(defgeneric incomplete-token-p (token))
+
 (defmethod incomplete-token-p ((token incomplete-token))
   t)
 
 (defmethod incomplete-token-p (token)
   nil)
 
-
 (defun serialize-incomplete-token (token stream)
   (format stream "~{~a~}" (mapcar #'string (parts token))))
 
 (defmethod make-instance :after ((i-tok incomplete-token) &key)
   (assert (every (lambda (x) (or (stringp x) (keywordp x)))
-		 (parts i-tok))))
+                 (parts i-tok))))
 
 (defun intersperse (list with)
   (let ((list list))
@@ -76,15 +83,15 @@
 
 (defun resolve-up-tokens (relative reverse-token-list)
   (let* (up
-	 (new (loop :for token :in reverse-token-list
-		 :for up? := (up-token-p token)
-		 :if (or up up?)
-		 :do (if up? (push token up) (pop up))
-		 :else
-		 :collect token)))
+         (new (loop :for token :in reverse-token-list
+                 :for up? := (up-token-p token)
+                 :if (or up up?)
+                 :do (if up? (push token up) (pop up))
+                 :else
+                 :collect token)))
     (unless relative
       (when up
-	(error ":up token found at start of absolute path")))
+        (error ":up token found at start of absolute path")))
     (append new up)))
 
 ;;----------------------------------------------------------------------
@@ -105,10 +112,14 @@
   (assert (find kind '(:leaf :file :branch :dir)))
   (route* nil (or (eq kind :leaf) (eq kind :file)) tokens))
 
+(defgeneric make-relative (route))
+
 (defmethod make-relative ((route route))
   (if (relative-p route)
       route
       (route* t (terminates-p route) (reverse (tokens route)))))
+
+(defgeneric route* (relative? terminated? tokens))
 
 (defmethod route* (relative? terminated? tokens)
   (assert (every (lambda (x) (typep x 'token))
@@ -125,6 +136,8 @@
        :terminates-p (not (null terminated?))
        :incomplete-token-count tc))))
 
+(defgeneric push-token (route token &optional terminates-p?))
+
 (defmethod push-token ((route route) token &optional terminates-p?)
   (assert (typep token 'token))
   (assert (not (terminates-p route)))
@@ -136,6 +149,8 @@
    :incomplete-token-count (if (typep token 'incomplete-token)
                                (1+ (incomplete-token-count route))
                                (incomplete-token-count route))))
+
+(defgeneric pop-token (route))
 
 (defmethod pop-token ((route route))
   (let ((focus (first (tokens route)))
@@ -158,6 +173,8 @@
 
 ;;----------------------------------------------------------------------
 
+(defgeneric join-routes (first second &rest rest))
+
 (defmethod join-routes ((first route) (second route) &rest rest)
   (if rest
       (reduce #'%join-routes (cons second rest) :initial-value first)
@@ -177,6 +194,9 @@
   (when rest
     (apply #'join-routes (first rest) (second rest) (cddr rest))))
 
+
+(defgeneric %join-routes (first second))
+
 (defmethod %join-routes ((first route) (second route))
   (assert (not (terminates-p first)))
   (assert (relative-p second))
@@ -189,7 +209,7 @@
                               (incomplete-token-count second))))
 
 ;;----------------------------------------------------------------------
-
+(defgeneric split-route (route at))
 (defmethod split-route ((route route) (at integer))
   (assert (>= at 0))
   (let* ((tokens (tokens route))
@@ -213,6 +233,8 @@
         :incomplete-token-count (count-if #'incomplete-token-p right-tokens))))))
 
 ;;----------------------------------------------------------------------
+
+(defgeneric subseq-route (route start &optional end))
 
 (defmethod subseq-route (route start &optional end)
   (assert (integerp start))
