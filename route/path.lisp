@@ -231,7 +231,7 @@ plain route, which you can then pass to #'join-routes"
          (defmethod %clone-to-rel ((route ,name) &optional new-inner-route)
            (make-instance ',name :route new-inner-route))
 
-         (defun ,constructor (kind path-string)
+         (defun ,constructor (kind path)
            (assert (find kind '(:file :dir)))
            (assert (stringp path-string))
            (multiple-value-bind (tokens relative key-vals)
@@ -295,3 +295,10 @@ plain route, which you can then pass to #'join-routes"
                (error "No special fields allowed in relative paths"))))))))
 
 ;;----------------------------------------------------------------------
+
+(defun from-pathname (path-kind pathname &rest keys &key &allow-other-keys)
+  (let* ((pathname (uiop:ensure-pathname pathname))
+         (route (route-from-pathname pathname)))
+    (if path-kind
+        (apply #'promote-route-to path-kind route keys)
+        route)))

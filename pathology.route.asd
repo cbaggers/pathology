@@ -9,4 +9,5 @@
   :components ((:file "route/package")
                (:file "route/route")
                (:file "route/reader")
-               (:file "route/path")))
+               (:file "route/path")
+               (:file "route/path-extras")))

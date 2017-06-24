@@ -23,4 +23,9 @@
            :serialize-path
            :deserialize-path
            :route-from-pathname
-           :path-syntax))
+           :promote-route-to
+           :path-syntax
+           :from-pathname
+           ;; extras
+           :probe-path
+           :path-write-date))
